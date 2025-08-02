@@ -7,9 +7,14 @@ export default function Converter() {
   const [downloadUrl, setDownloadUrl] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const [conversionTime, setConversionTime] = useState(null);
+
   const handleConvert = async () => {
     setLoading(true);
     setDownloadUrl("");
+    setConversionTime(null);
+    const startTime = performance.now();
+
     try {
       const res = await fetch("http://localhost:5000/convert", {
         method: "POST",
@@ -19,22 +24,29 @@ export default function Converter() {
 
       const data = await res.json();
       setDownloadUrl(data.downloadUrl);
+
+      const endTime = performance.now();
+      const durationInSeconds = ((endTime - startTime) / 1000).toFixed(2);
+      setConversionTime(durationInSeconds);
     } catch (err) {
       alert("Failed to convert video.");
     }
+
     setLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-100 flex flex-col">
-
       {/* Converter Card */}
       <main className="flex-1 flex items-center justify-center px-4 py-16">
         <div className="bg-white/80 rounded-2xl shadow-2xl max-w-lg w-full border border-purple-100 p-8 md:p-12">
           <h1 className="text-3xl md:text-4xl font-extrabold text-center text-purple-700 mb-8">
             Convert Your Video
           </h1>
-          <label htmlFor="video-link" className="block text-sm font-medium mb-2 text-gray-700">
+          <label
+            htmlFor="video-link"
+            className="block text-sm font-medium mb-2 text-gray-700"
+          >
             <span className="inline-flex items-center gap-2">
               <FaLink className="text-purple-400" /> Video Link
             </span>
@@ -76,14 +88,15 @@ export default function Converter() {
                 >
                   <FaDownload /> Download MP4
                 </Link>
-                <audio
-                  controls
-                  src={downloadUrl}
-                  className="w-full rounded-lg "
-                  aria-label="Audio preview"
-                >
-                  Your browser does not support the audio element.
-                </audio>
+                {conversionTime && (
+                  <p className="text-sm text-gray-600 mt-2 text-center">
+                    ⏱️ Converted in{" "}
+                    <span className="font-semibold">
+                      {conversionTime} seconds
+                    </span>
+                  </p>
+                )}
+
                 <video
                   controls
                   src={downloadUrl}
